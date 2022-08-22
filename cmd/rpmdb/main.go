@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"log"
 
 	multierror "github.com/hashicorp/go-multierror"
@@ -46,6 +47,15 @@ func run() error {
 
 func detectDB() (*rpmdb.RpmDB, error) {
 	var result error
+
+	if len(os.Args) > 1 {
+		db, err := rpmdb.Open(os.Args[1])
+		if err == nil {
+			return db, nil
+		}
+		result = multierror.Append(result, err)
+	}
+
 	db, err := rpmdb.Open("./rpmdb.sqlite")
 	if err == nil {
 		return db, nil
