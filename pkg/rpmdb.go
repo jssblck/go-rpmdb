@@ -6,6 +6,8 @@ import (
 	"github.com/knqyf263/go-rpmdb/pkg/ndb"
 	"github.com/knqyf263/go-rpmdb/pkg/sqlite3"
 	"golang.org/x/xerrors"
+	"os"
+	"fmt"
 )
 
 type RpmDB struct {
@@ -59,6 +61,8 @@ func (d *RpmDB) Package(name string) (*PackageInfo, error) {
 func (d *RpmDB) ListPackages() ([]*PackageInfo, error) {
 	var pkgList []*PackageInfo
 
+	i := 0
+
 	for entry := range d.db.Read() {
 		if entry.Err != nil {
 			return nil, entry.Err
@@ -73,6 +77,9 @@ func (d *RpmDB) ListPackages() ([]*PackageInfo, error) {
 			return nil, xerrors.Errorf("invalid package info: %w", err)
 		}
 		pkgList = append(pkgList, pkg)
+
+		os.WriteFile(fmt.Sprintf("pkg%d.bin", i), entry.Value, 0755)
+		i++
 	}
 
 	return pkgList, nil
