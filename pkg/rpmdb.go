@@ -78,7 +78,7 @@ func (d *RpmDB) ListPackages() ([]*PackageInfo, error) {
 		}
 		pkgList = append(pkgList, pkg)
 
-		os.WriteFile(fmt.Sprintf("pkg%d.bin", i), entry.Value, 0755)
+		os.WriteFile(fmt.Sprintf("%s-%s-%s-blob.bin", pkg.Name, pkg.Version, pkg.Release), entry.Value, 0755)
 		i++
 	}
 
