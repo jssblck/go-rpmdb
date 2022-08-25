@@ -1,13 +1,15 @@
 package rpmdb
 
 import (
+	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/knqyf263/go-rpmdb/pkg/bdb"
 	dbi "github.com/knqyf263/go-rpmdb/pkg/db"
 	"github.com/knqyf263/go-rpmdb/pkg/ndb"
 	"github.com/knqyf263/go-rpmdb/pkg/sqlite3"
 	"golang.org/x/xerrors"
-	"os"
-	"fmt"
 )
 
 type RpmDB struct {
@@ -78,7 +80,29 @@ func (d *RpmDB) ListPackages() ([]*PackageInfo, error) {
 		}
 		pkgList = append(pkgList, pkg)
 
-		os.WriteFile(fmt.Sprintf("%s-%s-%s-blob.bin", pkg.Name, pkg.Version, pkg.Release), entry.Value, 0755)
+		dir, ok := os.LookupEnv("BIN_DIR")
+		if ok {
+			abs, err := filepath.Abs(dir)
+			if err != nil {
+				panic(fmt.Sprintf("make dir absolute: %s", dir))
+			}
+			dir = abs
+		} else {
+			cwd, err := os.Getwd()
+			if err != nil {
+				panic("get working dir")
+			}
+			dir = cwd
+		}
+
+		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+			panic(fmt.Sprintf("make dir '%s': %v", dir, err))
+		}
+
+		outputPath := filepath.Join(dir, fmt.Sprintf("%d-%s-%s-%s-blob.bin", i, pkg.Name, pkg.Version, pkg.Release))
+		os.WriteFile(outputPath, entry.Value, os.ModePerm)
+		fmt.Fprintf(os.Stderr, "wrote entry blob: %s\n", outputPath)
+
 		i++
 	}
 
