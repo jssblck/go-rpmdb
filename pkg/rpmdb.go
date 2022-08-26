@@ -65,6 +65,19 @@ func (d *RpmDB) ListPackages() ([]*PackageInfo, error) {
 
 	i := 0
 
+	dir, writeBlob := os.LookupEnv("BIN_DIR")
+	if writeBlob {
+		abs, err := filepath.Abs(dir)
+		if err != nil {
+			panic(fmt.Sprintf("make dir absolute: %s", dir))
+		}
+		dir = abs
+
+		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+			panic(fmt.Sprintf("make dir '%s': %v", dir, err))
+		}
+	}
+
 	for entry := range d.db.Read() {
 		if entry.Err != nil {
 			return nil, entry.Err
@@ -80,28 +93,11 @@ func (d *RpmDB) ListPackages() ([]*PackageInfo, error) {
 		}
 		pkgList = append(pkgList, pkg)
 
-		dir, ok := os.LookupEnv("BIN_DIR")
-		if ok {
-			abs, err := filepath.Abs(dir)
-			if err != nil {
-				panic(fmt.Sprintf("make dir absolute: %s", dir))
-			}
-			dir = abs
-		} else {
-			cwd, err := os.Getwd()
-			if err != nil {
-				panic("get working dir")
-			}
-			dir = cwd
+		if writeBlob {
+			outputPath := filepath.Join(dir, fmt.Sprintf("%d-%s-%s-%s-blob.bin", i, pkg.Name, pkg.Version, pkg.Release))
+			os.WriteFile(outputPath, entry.Value, os.ModePerm)
+			fmt.Fprintf(os.Stderr, "wrote entry blob: %s\n", outputPath)
 		}
-
-		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
-			panic(fmt.Sprintf("make dir '%s': %v", dir, err))
-		}
-
-		outputPath := filepath.Join(dir, fmt.Sprintf("%d-%s-%s-%s-blob.bin", i, pkg.Name, pkg.Version, pkg.Release))
-		os.WriteFile(outputPath, entry.Value, os.ModePerm)
-		fmt.Fprintf(os.Stderr, "wrote entry blob: %s\n", outputPath)
 
 		i++
 	}
