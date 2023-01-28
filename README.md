@@ -1,4 +1,6 @@
 # go-rpmdb
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fjssblck%2Fgo-rpmdb.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fjssblck%2Fgo-rpmdb?ref=badge_shield)
+
 Library for enumerating packages in an RPM DB `Packages` file (without bindings).
 
 ```
@@ -37,3 +39,6 @@ func run() error {
 	return nil
 }
 ```
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fjssblck%2Fgo-rpmdb.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fjssblck%2Fgo-rpmdb?ref=badge_large)
